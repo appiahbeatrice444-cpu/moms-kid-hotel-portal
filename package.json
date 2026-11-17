@@ -1,0 +1,26 @@
+{
+  "name": "beatrice-auth",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Beatrice login and role-based authentication demo",
+  "main": "server.js",
+  "scripts": {
+    "create-admin": "node create-admin.js",
+    "db": "node view-db.js",
+    "start": "node setup-env.js && node server.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=22.13"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.800.0",
+    "docx": "^9.15.2",
+    "dotenv": "^16.4.7",
+    "express": "^5.1.0",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.1.0",
+    "nodemailer": "^10.0.16",
+    "puppeteer-core": "^25.16.0"
+  }
+}
