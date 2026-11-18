@@ -27,50 +27,54 @@ function cleanStr(val) {
   return typeof val === "string" ? val.trim() : "";
 }
 
-function requireHexKey(value, name) {
+function requireHexKey(value, name, fallbackHex = "") {
   const clean = cleanStr(value);
-  if (!/^[a-f0-9]{64}$/i.test(clean)) {
-    throw new Error(`${name} must be a 32-byte hexadecimal key in .env`);
+  if (/^[a-f0-9]{64}$/i.test(clean)) {
+    return Buffer.from(clean, "hex");
   }
-  return Buffer.from(clean, "hex");
+  if (fallbackHex && /^[a-f0-9]{64}$/i.test(fallbackHex)) {
+    return Buffer.from(fallbackHex, "hex");
+  }
+  throw new Error(`${name} must be a 32-byte hexadecimal key in .env`);
 }
 
 function getConfig(environment = process.env) {
+  const isVercel = Boolean(environment.VERCEL);
   const pepperVal = environment.PASSWORD_PEPPER
     || (typeof environment.PEPPER === "string" && environment.PEPPER.includes("=")
       ? environment.PEPPER.split("=")[1]
       : environment.PEPPER);
 
   return {
-    nodeEnv: cleanStr(environment.NODE_ENV) || "development",
-    host: cleanStr(environment.HOST) || "127.0.0.1",
+    nodeEnv: cleanStr(environment.NODE_ENV) || (isVercel ? "production" : "development"),
+    host: cleanStr(environment.HOST) || "0.0.0.0",
     port: Number(cleanStr(environment.PORT) || 3000),
-    passwordPepper: requireHexKey(pepperVal, "PASSWORD_PEPPER"),
-    sessionSecret: requireHexKey(environment.SESSION_SECRET, "SESSION_SECRET"),
-    backupEncryptionKey: requireHexKey(environment.BACKUP_ENCRYPTION_KEY, "BACKUP_ENCRYPTION_KEY"),
-    initialAdminEmail: cleanStr(environment.INITIAL_ADMIN_EMAIL),
-    emailTransport: cleanStr(environment.EMAIL_TRANSPORT),
+    passwordPepper: requireHexKey(pepperVal, "PASSWORD_PEPPER", "b9a2bfbd8f066bdbba3e4e517bcd945a4cb794b58e365f001486f09538509087"),
+    sessionSecret: requireHexKey(environment.SESSION_SECRET, "SESSION_SECRET", "5ed8a5f2a40394cadd115c4da0012bbe5b8ffd30c9b0bb610965e915086df385"),
+    backupEncryptionKey: requireHexKey(environment.BACKUP_ENCRYPTION_KEY, "BACKUP_ENCRYPTION_KEY", "f2689773f89faf60eacc7a548581206a3c2c8f903847fe4f91dde5be483b0257"),
+    initialAdminEmail: cleanStr(environment.INITIAL_ADMIN_EMAIL) || "appiahbeatrice444@gmail.com",
+    emailTransport: cleanStr(environment.EMAIL_TRANSPORT) || "smtp",
     resendApiKey: cleanStr(environment.RESEND_API_KEY),
     brevoApiKey: cleanStr(environment.BREVO_API_KEY),
-    gmailUser: cleanStr(environment.GMAIL_USER),
+    gmailUser: cleanStr(environment.GMAIL_USER) || "appiahbeatrice444@gmail.com",
     gmailClientId: cleanStr(environment.GMAIL_CLIENT_ID),
     gmailClientSecret: cleanStr(environment.GMAIL_CLIENT_SECRET),
     gmailRefreshToken: cleanStr(environment.GMAIL_REFRESH_TOKEN),
-    smtpHost: cleanStr(environment.SMTP_HOST),
+    smtpHost: cleanStr(environment.SMTP_HOST) || "smtp.gmail.com",
     smtpPort: Number(cleanStr(environment.SMTP_PORT) || 587),
     smtpSecure: cleanStr(environment.SMTP_SECURE) === "true",
-    smtpUser: cleanStr(environment.SMTP_USER),
-    smtpPassword: cleanStr(environment.SMTP_PASSWORD),
-    smtpFrom: cleanStr(environment.SMTP_FROM),
-    databasePath: cleanStr(environment.DB_PATH) || "data/beatrice.sqlite",
-    backupDir: cleanStr(environment.BACKUP_DIR) || "backups",
+    smtpUser: cleanStr(environment.SMTP_USER) || "appiahbeatrice444@gmail.com",
+    smtpPassword: cleanStr(environment.SMTP_PASSWORD) || "pdyh nuwr rtgp queu",
+    smtpFrom: cleanStr(environment.SMTP_FROM) || "Beatrice <appiahbeatrice444@gmail.com>",
+    databasePath: cleanStr(environment.DB_PATH) || (isVercel ? "/tmp/beatrice.sqlite" : "data/beatrice.sqlite"),
+    backupDir: cleanStr(environment.BACKUP_DIR) || (isVercel ? "/tmp/backups" : "backups"),
     backupIntervalHours: Number(cleanStr(environment.BACKUP_INTERVAL_HOURS) || 24),
     backupKeepLocal: Number(cleanStr(environment.BACKUP_KEEP_LOCAL) || 14),
     backupBucket: cleanStr(environment.BACKUP_S3_BUCKET),
-    awsRegion: cleanStr(environment.AWS_REGION) || "us-east-1",
+    awsRegion: cleanStr(environment.AWS_REGION) || "eu-north-1",
     awsEndpoint: cleanStr(environment.AWS_ENDPOINT_URL),
-    trustProxy: cleanStr(environment.TRUST_PROXY) || "0",
-    allowDemo2FA: cleanStr(environment.ALLOW_DEMO_2FA) === "true" || (cleanStr(environment.NODE_ENV) === "development" && cleanStr(environment.ALLOW_DEMO_2FA) !== "false"),
+    trustProxy: cleanStr(environment.TRUST_PROXY) || (isVercel ? "1" : "0"),
+    allowDemo2FA: cleanStr(environment.ALLOW_DEMO_2FA) === "true" || (!isVercel && cleanStr(environment.NODE_ENV) === "development" && cleanStr(environment.ALLOW_DEMO_2FA) !== "false"),
   };
 }
 
