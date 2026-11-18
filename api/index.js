@@ -71,9 +71,12 @@ module.exports = async (req, res) => {
     const app = await getApp();
     return app(req, res);
   } catch (error) {
-    console.error("Serverless invocation error:", error);
+    console.error("Serverless invocation error:", error.stack || error.message);
     res.statusCode = 500;
     res.setHeader("Content-Type", "application/json");
-    res.end(JSON.stringify({ error: "Internal Server Error", message: error.message }));
+    res.end(JSON.stringify({
+      error: "Internal Server Error",
+      message: error.message,
+    }));
   }
 };
