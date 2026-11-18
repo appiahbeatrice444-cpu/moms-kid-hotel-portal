@@ -2,13 +2,13 @@
   "version": 2,
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/api/(.*)",
       "destination": "/api/index.js"
     }
   ],
   "functions": {
     "api/index.js": {
-      "includeFiles": "index.html,implementation-paper.html,BEA 1.png,public/**,data/beatrice.sqlite"
+      "includeFiles": "data/beatrice.sqlite"
     }
   }
 }
