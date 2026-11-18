@@ -170,14 +170,28 @@ function createApp({ database, config, backupService, dummyCredential, emailServ
       res.setHeader("Expires", "0");
     },
   }));
-  app.get("/", (request, response) => {
+  function resolveStaticFile(filename) {
+    const candidates = [
+      path.join(__dirname, filename),
+      path.join(__dirname, "..", filename),
+      path.join(__dirname, "public", filename),
+      path.join(process.cwd(), filename),
+      path.join(process.cwd(), "public", filename),
+    ];
+    for (const p of candidates) {
+      if (fs.existsSync(p)) return p;
+    }
+    return path.join(__dirname, filename);
+  }
+
+  app.get(["/", "/index.html"], (request, response) => {
     response.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
     response.setHeader("Pragma", "no-cache");
     response.setHeader("Expires", "0");
-    response.sendFile(path.join(__dirname, "index.html"));
+    response.sendFile(resolveStaticFile("index.html"));
   });
-  app.get("/implementation-paper.html", (request, response) => response.sendFile(path.join(__dirname, "implementation-paper.html")));
-  app.get("/bea-1.png", (request, response) => response.sendFile(path.join(__dirname, "BEA 1.png")));
+  app.get("/implementation-paper.html", (request, response) => response.sendFile(resolveStaticFile("implementation-paper.html")));
+  app.get("/bea-1.png", (request, response) => response.sendFile(resolveStaticFile("BEA 1.png")));
 
   const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
